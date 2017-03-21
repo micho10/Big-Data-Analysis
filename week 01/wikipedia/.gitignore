@@ -59,3 +59,4 @@ project/plugins/project/
 ### Scala template
 *.class
 *.log
+/src/main/resources/wikipedia/wikipedia.dat
