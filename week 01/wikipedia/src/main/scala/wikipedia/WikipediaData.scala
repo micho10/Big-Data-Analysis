@@ -14,7 +14,7 @@ object WikipediaData {
     val subs = "</title><text>"
     val i = line.indexOf(subs)
     val title = line.substring(14, i)
-    val text  = line.substring(i + subs.length, line.length-16)
+    val text  = line.substring(i + subs.length, line.length - 16)
     WikipediaArticle(title, text)
   }
 }
