@@ -24,6 +24,8 @@
 # Mongo Explorer plugin:
 .idea/**/mongoSettings.xml
 
+.idea/kotlinc.xml
+
 ## File-based project format:
 *.iws
 
