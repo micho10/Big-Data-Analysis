@@ -8,7 +8,8 @@ import annotation.tailrec
 import scala.reflect.ClassTag
 
 /** A raw stackoverflow posting, either a question or an answer */
-case class Posting(postingType: Int, id: Int, acceptedAnswer: Option[Int], parentId: Option[Int], score: Int, tags: Option[String]) extends Serializable
+case class Posting(postingType: Int, id: Int, acceptedAnswer: Option[Int], parentId: Option[Int], score: Int,
+                   tags: Option[String]) extends Serializable
 
 
 /** The main class */
@@ -78,7 +79,8 @@ class StackOverflow extends Serializable {
 
   /** Group the questions and answers together */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
-    ???
+    val questions = postings.filter(posting => posting.postingType == 1)
+    val answers = postings.filter(posting => posting.postingType == 2)
   }
 
 
@@ -171,7 +173,8 @@ class StackOverflow extends Serializable {
   //
 
   /** Main kmeans computation */
-  @tailrec final def kmeans(means: Array[(Int, Int)], vectors: RDD[(Int, Int)], iter: Int = 1, debug: Boolean = false): Array[(Int, Int)] = {
+  @tailrec final def kmeans(means: Array[(Int, Int)], vectors: RDD[(Int, Int)], iter: Int = 1,
+                            debug: Boolean = false): Array[(Int, Int)] = {
     val newMeans = means.clone() // you need to compute newMeans
 
     // TODO: Fill in the newMeans array
@@ -207,8 +210,7 @@ class StackOverflow extends Serializable {
   //
 
   /** Decide whether the kmeans clustering converged */
-  def converged(distance: Double) =
-    distance < kmeansEta
+  def converged(distance: Double) = distance < kmeansEta
 
 
   /** Return the euclidean distance between two points */
