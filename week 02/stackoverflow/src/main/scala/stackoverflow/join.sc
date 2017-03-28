@@ -25,6 +25,22 @@ def rawPostings(lines: Array[String]): Array[Posting] =
       tags =           if (arr.length >= 6) Some(arr(5).intern()) else None)
   })
 
+//def groupedPostings(postings: Array[Posting]): Array[(Int, Iterable[(Posting, Posting)])] = {
+//  val questions = postings.filter(posting => posting.postingType == 1)
+//  val answers = postings.filter(posting => posting.postingType == 2)
+//}
+
+val postings = rawPostings(input)
+
+val questions = postings.filter(_.postingType == 1)
+                .map(p => (p.id, p))
+
+val answers = postings.filter(_.postingType == 2)
+  .map(p => (p.parentId.get, p))
 
 
-rawPostings(input)
+//              .map(p match {case Some(id) => (p.parentId, p)})
+
+/*
+
+ */
