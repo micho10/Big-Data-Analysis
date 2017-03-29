@@ -128,7 +128,10 @@ class StackOverflow extends Serializable {
       }
     }
 
-    ???
+    for {
+      (posting, score)  <- scored
+      index             <- firstLangInTag(posting.tags, langs)
+    } yield (index * langSpread, score)
   }
 
 
