@@ -24,7 +24,7 @@ object StackOverflow extends StackOverflow {
     val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
     val raw     = rawPostings(lines)
     val grouped = groupedPostings(raw)
-    val scored  = scoredPostings(grouped)
+    val scored  = scoredPostings(grouped).sample(true, 0.1, 0)
     val vectors = vectorPostings(scored)
 //    assert(vectors.count() == 2121822, "Incorrect number of vectors: " + vectors.count())
 
@@ -128,10 +128,12 @@ class StackOverflow extends Serializable {
       }
     }
 
-    for {
+    val vectors = for {
       (posting, score)  <- scored
       index             <- firstLangInTag(posting.tags, langs)
     } yield (index * langSpread, score)
+
+    vectors.persist()
   }
 
 
@@ -248,7 +250,7 @@ class StackOverflow extends Serializable {
   def findClosest(p: (Int, Int), centers: Array[(Int, Int)]): Int = {
     var bestIndex = 0
     var closest = Double.PositiveInfinity
-    for (i <- 0 until centers.length) {
+    for (i <- centers.indices) {
       val tempDist = euclideanDistance(p, centers(i))
       if (tempDist < closest) {
         closest = tempDist
@@ -287,10 +289,17 @@ class StackOverflow extends Serializable {
     val closestGrouped = closest.groupByKey()
 
     val median = closestGrouped.mapValues { vs =>
-      val langLabel: String   = ??? // most common language in the cluster
-      val langPercent: Double = ??? // percent of the questions in the most common language
-      val clusterSize: Int    = ???
-      val medianScore: Int    = ???
+//      val langLabel: String   = ??? // most common language in the cluster
+      val langLabel: String   = "N/A"
+//      val langPercent: Double = ??? // percent of the questions in the most common language
+      val langPercent: Double = 0.0
+      val clusterSize: Int    = vs.size
+      val medianScore: Int    = {
+        val middle = clusterSize / 2
+        val sortedScores = vs.map(_._2).toArray.sorted
+        if (clusterSize % 2 == 0) (sortedScores(middle - 1) + sortedScores(middle)) / 2
+        else sortedScores(middle)
+      }
 
       (langLabel, langPercent, clusterSize, medianScore)
     }
