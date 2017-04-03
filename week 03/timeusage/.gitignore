@@ -60,3 +60,5 @@ fabric.properties
 ### Scala template
 *.class
 *.log
+
+/src/main/resources/timeusage/atussum.csv
