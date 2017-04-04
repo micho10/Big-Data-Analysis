@@ -63,7 +63,7 @@ object TimeUsage {
     * @param columnNames Column names of the DataFrame
     */
   def dfSchema(columnNames: List[String]): StructType = {
-    val fields = List(StructField(columnNames.head, StringType, nullable = false)) ::
+    val fields = StructField(columnNames.head, StringType, nullable = false) ::
       columnNames.tail.map(fieldName => StructField(fieldName, DoubleType, nullable = false))
     StructType(fields)
   }
