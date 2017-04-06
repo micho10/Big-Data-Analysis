@@ -90,14 +90,18 @@ object TimeUsage {
     *    “t10”, “t12”, “t13”, “t14”, “t15”, “t16” and “t18” (those which are not part of the previous groups only).
     */
   def classifiedColumns(columnNames: List[String]): (List[Column], List[Column], List[Column]) = {
-    val activities = List(
-      List("t01", "t03", "t11", "t1801", "t1803"),
-      List("t05", "t1805"),
-      List("t02", "t04", "t06", "t07", "t08", "t09", "t10", "t12", "t13", "t14", "t15", "t16", "t18")
-    ).zipWithIndex
+    val primaryActivities = Set("t01", "t03", "t11", "t1801", "t1803")
+    val workingActivities = Set("t05", "t1805")
+    val leisureActivities = Set("t02", "t04", "t06", "t07", "t08", "t09", "t10", "t12", "t13", "t14", "t15", "t16", "t18")
 
+    val primaryColumns = columnNames.filter(name => primaryActivities.exists(name.startsWith)).map(col)
+    val workingColumns = columnNames.filter(name => workingActivities.exists(name.startsWith)).map(col)
+    val leisureColumns = columnNames.filter(name => leisureActivities.exists(name.startsWith))
+      .filterNot(name => primaryActivities.exists(name.startsWith))
+      .filterNot(name => workingActivities.exists(name.startsWith))
+      .map(col)
 
-    (List.empty, List.empty, List.empty)
+    (primaryColumns, workingColumns, leisureColumns)
   }
 
   /** @return a projection of the initial DataFrame such that all columns containing hours spent on primary needs
