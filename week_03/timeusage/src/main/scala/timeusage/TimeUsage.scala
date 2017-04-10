@@ -140,13 +140,34 @@ object TimeUsage {
     otherColumns: List[Column],
     df: DataFrame
   ): DataFrame = {
-    val workingStatusProjection: Column = ???
-    val sexProjection: Column = ???
-    val ageProjection: Column = ???
+    val workingStatusProjection: Column =
+      when($"telfs".between(1, 3), "working")
+        .otherwise("not working")
+        .as("working")
+    val sexProjection: Column =
+      when($"tesex" === 1, "male")
+        .otherwise("female")
+    val ageProjection: Column =
+      when($"teage".between(15, 22), "young")
+        .when($"teage".between(23, 55), "active")
+        .otherwise("elder")
+        .as("age")
 
-    val primaryNeedsProjection: Column = ???
-    val workProjection: Column = ???
-    val otherProjection: Column = ???
+    val primaryNeedsProjection: Column =
+      primaryNeedsColumns
+        .reduce(_ + _)
+        .divide(60)
+        .as("primaryNeeds")
+    val workProjection: Column =
+      workColumns
+        .reduce(_ + _)
+        .divide(60)
+        .as("work")
+    val otherProjection: Column =
+      otherColumns
+        .reduce(_ + _)
+        .divide(60)
+        .as("other")
     df
       .select(workingStatusProjection, sexProjection, ageProjection, primaryNeedsProjection, workProjection, otherProjection)
       .where($"telfs" <= 4) // Discard people who are not in labor force
@@ -170,7 +191,14 @@ object TimeUsage {
     * Finally, the resulting DataFrame should be sorted by working status, sex and age.
     */
   def timeUsageGrouped(summed: DataFrame): DataFrame = {
-    ???
+    summed
+      .groupBy($"working", $"sex", $"age")
+      .agg(
+        round(avg($"primaryNeeds"), 1).as("primaryNeeds"),
+        round(avg($"work"), 1).as("work"),
+        round(avg($"other"), 1).as("other")
+      )
+    .orderBy($"working", $"sex", $"age")
   }
 
   /**
