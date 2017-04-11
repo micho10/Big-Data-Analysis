@@ -29,17 +29,17 @@ object TimeUsage {
   def timeUsageByLifePeriod(): Unit = {
     val (columns, initDf) = read("/timeusage/atussum.csv")
     val (primaryNeedsColumns, workColumns, otherColumns) = classifiedColumns(columns)
-//    println("\n############## primaryNeedsColumns ##############")
-//    primaryNeedsColumns.map(println)
-//    println("\n############## workColumns ##############")
-//    workColumns.map(println)
-//    println("\n############## otherColumns ##############")
-//    otherColumns.map(println)
 //    initDf.show()
     val summaryDf = timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
     val finalDf = timeUsageGrouped(summaryDf)
     println("\n############## timeUsageGrouped ##############")
     finalDf.show()
+//    val finalSqlDf = timeUsageGroupedSql(summaryDf)
+//    println("\n############## timeUsageGroupedSql ##############")
+//    finalSqlDf.show()
+//    val finalTypedDf = timeUsageGroupedTyped(timeUsageSummaryTyped(summaryDf))
+//    println("\n############## timeUsageGroupedSql ##############")
+//    finalTypedDf.show()
   }
 
   /** @return The read DataFrame along with its column names. */
@@ -71,24 +71,17 @@ object TimeUsage {
     * @param columnNames Column names of the DataFrame
     */
   def dfSchema(columnNames: List[String]): StructType = {
-//    StructType(
-//      StructField(columnNames.head, StringType, nullable = false) ::
-//      columnNames.tail.map(fieldName => StructField(fieldName, DoubleType, nullable = false))
-//    )
-//    val fields = StructField(columnNames.head, StringType, nullable = false). ::
-//      columnNames.tail.map(fieldName => StructField(fieldName, DoubleType, nullable = false))
-//    StructType(fields)
-
-    val header = StructField(columnNames.head, StringType, nullable = false)
-    val fields = columnNames.tail.map(fieldName => StructField(fieldName, DoubleType, nullable = false))
-    StructType(header :: fields)
+    StructType(
+      StructField(columnNames.head, StringType, nullable = false) ::
+      columnNames.tail.map(fieldName => StructField(fieldName, DoubleType, nullable = false))
+    )
   }
 
 
   /** @return An RDD Row compatible with the schema produced by `dfSchema`
     * @param line Raw fields
     */
-  def row(line: List[String]): Row = Row(line.head.toString.trim :: line.tail.map(_.trim.toDouble))
+  def row(line: List[String]): Row = Row(line.head.trim :: line.tail.map(_.trim).map(_.toDouble))
 
   /** @return The initial data frame columns partitioned in three groups: primary needs (sleeping, eating, etc.),
     *         work and other (leisure activities)
@@ -234,9 +227,9 @@ object TimeUsage {
   def timeUsageGroupedSqlQuery(viewName: String): String =
     "SELECT working, sex, age, " +
       "ROUND(AVG(primaryNeeds), 1) AS primaryNeeds, " +
-      "ROUND(AVG(working), 1) AS working, " +
+      "ROUND(AVG(working), 1) AS work, " +
       "ROUND(AVG(other), 1) AS other " +
-      "FROM " + viewName + " " +
+      s"FROM $viewName " +
       "GROUP BY working, sex, age " +
       "ORDER BY working, sex, age"
 
