@@ -1,40 +1,24 @@
 package timeusage
 
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql.{ColumnName, DataFrame, Row, SparkSession}
-import org.apache.spark.sql.types.{DoubleType, StringType, StructField, StructType}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.types.{DoubleType, StringType}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
-import scala.util.Random
-
 @RunWith(classOf[JUnitRunner])
 class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
 
+  private lazy val timeUsage = TimeUsage
 
-  //  lazy val spark = SparkSession
-  //    .builder()
-  //    .master("local[3]")
-  //    .appName("timeusage-test")
-  ////    .config("spark.ui.enabled", "false")
-  //    //    .config("spark.eventLog.dir", "/tmp/spark-events")
-  //    //    .config("spark.eventLog.enabled", "true")
-  //    .getOrCreate()
+  private lazy val (columns, initDf) = timeUsage.read("/timeusage/atussum-10000.csv")
+  private lazy val (primaryNeedsColumns, workColumns, otherColumns) = timeUsage.classifiedColumns(columns)
+  private lazy val summaryDf:DataFrame = timeUsage.timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
+  private lazy val finalDf:DataFrame = timeUsage.timeUsageGrouped(summaryDf)
 
-  lazy val timeUsage = TimeUsage
-
-  lazy val (columns, initDf) = timeUsage.read("/timeusage/atussum-10000.csv")
-  lazy val (primaryNeedsColumns, workColumns, otherColumns) = timeUsage.classifiedColumns(columns)
-  lazy val summaryDf:DataFrame = timeUsage.timeUsageSummary(primaryNeedsColumns, workColumns, otherColumns, initDf)
-  lazy val finalDf:DataFrame = timeUsage.timeUsageGrouped(summaryDf)
-
-  lazy val sqlDf = timeUsage.timeUsageGroupedSql(summaryDf)
-  lazy val summaryDs = timeUsage.timeUsageSummaryTyped(summaryDf)
-  lazy val finalDs = timeUsage.timeUsageGroupedTyped(summaryDs)
-
-
-  //  lazy val lines = spark.read.csv(getClass.getResource("/timeusage/atussum-10000.csv").getPath)
+  private lazy val sqlDf = timeUsage.timeUsageGroupedSql(summaryDf)
+  private lazy val summaryDs = timeUsage.timeUsageSummaryTyped(summaryDf)
+  private lazy val finalDs = timeUsage.timeUsageGroupedTyped(summaryDs)
 
 
   test("timeUsage") {
@@ -42,7 +26,7 @@ class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
     assert(timeUsage.spark.sparkContext.isStopped === false)
   }
 
-  test("dfSchema"){
+  test("dfSchema") {
     val testSchema = timeUsage.dfSchema(List("fieldA", "fieldB"))
 
     assert(testSchema.fields(0).name === "fieldA")
@@ -51,7 +35,7 @@ class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
     assert(testSchema.fields(1).dataType === DoubleType)
   }
 
-  test("row"){
+  test("row") {
     val testRow = timeUsage.row(List("fieldA", "0.3", "1"))
 
     assert(testRow(0).getClass.getName === "java.lang.String")
@@ -80,35 +64,35 @@ class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
     assert(oC.contains("t180699"))
   }
 
-  test("timeUsageSummary"){
+  test("timeUsageSummary") {
     assert(summaryDf.columns.length === 6)
     assert(summaryDf.count === 6872)
     summaryDf.show()
   }
 
-//  test("timeUsageGrouped"){
-//    assert(finalDf.count === 2*2*3)
-//    assert(finalDf.head.getDouble(3) === 12.3)
-//    finalDf.show()
-//  }
-//
-//  test("timeUsageGroupedSql"){
-//    assert(sqlDf.count === 2*2*3)
-//    assert(sqlDf.head.getDouble(3) === 12.3)
-//    sqlDf.show()
-//  }
-//
-//  test("timeUsageSummaryTyped"){
-//    assert(summaryDs.head.getClass.getName === "timeusage.TimeUsageRow")
-//    assert(summaryDs.head.other === 8.75)
-//    assert(summaryDs.count === 6872)
-//    summaryDs.show()
-//  }
-//
-//  test("timeUsageGroupedTyped"){
-//    assert(finalDs.count === 2*2*3)
-//    assert(finalDs.head.primaryNeeds === 12.3)
-//    assert(finalDs.head.primaryNeeds === 12.3)
-//  }
+  test("timeUsageGrouped") {
+    assert(finalDf.count === 2 * 2 * 3)
+    assert(finalDf.head.getDouble(3) === 12.3)
+    finalDf.show()
+  }
+
+  test("timeUsageGroupedSql") {
+    assert(sqlDf.count === 2 * 2 * 3)
+    assert(sqlDf.head.getDouble(3) === 12.3)
+    sqlDf.show()
+  }
+
+  test("timeUsageSummaryTyped") {
+    assert(summaryDs.head.getClass.getName === "timeusage.TimeUsageRow")
+    assert(summaryDs.head.other === 8.75)
+    assert(summaryDs.count === 6872)
+    summaryDs.show()
+  }
+
+  test("timeUsageGroupedTyped") {
+    assert(finalDs.count === 2 * 2 * 3)
+    assert(finalDs.head.primaryNeeds === 12.3)
+    assert(finalDs.head.primaryNeeds === 12.3)
+  }
 
 }
