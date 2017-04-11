@@ -81,7 +81,7 @@ object TimeUsage {
   /** @return An RDD Row compatible with the schema produced by `dfSchema`
     * @param line Raw fields
     */
-  def row(line: List[String]): Row = Row(line.head.trim :: line.tail.map(_.trim).map(_.toDouble))
+  def row(line: List[String]): Row = Row(line.head :: line.tail.map(_.toDouble): _*)
 
   /** @return The initial data frame columns partitioned in three groups: primary needs (sleeping, eating, etc.),
     *         work and other (leisure activities)

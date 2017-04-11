@@ -51,44 +51,41 @@ class TimeUsageSuite extends FunSuite with BeforeAndAfterAll {
     assert(testSchema.fields(1).dataType === DoubleType)
   }
 
-//  test("row"){
-//    val testRow = timeUsage.row(List("fieldA", "0.3", "1"))
-//
-//    assert(testRow(0).getClass.getName === "java.lang.String")
-//    assert(testRow(1).getClass.getName === "java.lang.Double")
-//    assert(testRow(2).getClass.getName === "java.lang.Double")
-//  }
-//
-//  test("read") {
-//    assert(columns.size === 455)
-//    assert(initDf.count === 10000-1)
-//    initDf.show()
-//  }
-//
-//  test("classifiedColumns") {
-//    val pnC = primaryNeedsColumns.map(_.toString)
-//    val wC = workColumns.map(_.toString)
-//    val oC = otherColumns.map(_.toString)
-//
-//
-//    assert(pnC.contains("t010199"))
-//    assert(pnC.contains("t030501"))
-//    assert(pnC.contains("t110101"))
-//    assert(pnC.contains("t180382"))
-//    assert(wC.contains("t050103"))
-//    assert(wC.contains("t180589"))
-//    assert(oC.contains("t020101"))
-//    assert(oC.contains("t180699"))
-//
-//  }
-//
-//  test("timeUsageSummary"){
-//    assert(summaryDf.columns.length === 6)
-//    assert(summaryDf.count === 6872)
-//    summaryDf.show()
-//  }
-//
-//
+  test("row"){
+    val testRow = timeUsage.row(List("fieldA", "0.3", "1"))
+
+    assert(testRow(0).getClass.getName === "java.lang.String")
+    assert(testRow(1).getClass.getName === "java.lang.Double")
+    assert(testRow(2).getClass.getName === "java.lang.Double")
+  }
+
+  test("read") {
+    assert(columns.size === 455, "wrong number of columns")
+    assert(initDf.count === 10000 - 1, "wrong size of initDf")
+    initDf.show()
+  }
+
+  test("classifiedColumns") {
+    val pnC = primaryNeedsColumns.map(_.toString)
+    val wC = workColumns.map(_.toString)
+    val oC = otherColumns.map(_.toString)
+
+    assert(pnC.contains("t010199"))
+    assert(pnC.contains("t030501"))
+    assert(pnC.contains("t110101"))
+    assert(pnC.contains("t180382"))
+    assert(wC.contains("t050103"))
+    assert(wC.contains("t180589"))
+    assert(oC.contains("t020101"))
+    assert(oC.contains("t180699"))
+  }
+
+  test("timeUsageSummary"){
+    assert(summaryDf.columns.length === 6)
+    assert(summaryDf.count === 6872)
+    summaryDf.show()
+  }
+
 //  test("timeUsageGrouped"){
 //    assert(finalDf.count === 2*2*3)
 //    assert(finalDf.head.getDouble(3) === 12.3)
